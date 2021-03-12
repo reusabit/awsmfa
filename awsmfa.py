@@ -51,22 +51,22 @@ parser.add_argument(
 
 subparsers = parser.add_subparsers(dest="subcommand")
 
-openParser = subparsers.add_parser("open")
+loginParser = subparsers.add_parser("login")
 
-openParser.add_argument(
+loginParser.add_argument(
     "--token-code",
     help="Token from the mfa device",
     dest="tokenCode",
     required=True
 )
 
-openParser.add_argument(
+loginParser.add_argument(
     "passThroughArgs",
     nargs="*",
     help="Any additional arguments are passed through to the aws sts command. E.g., '-- --duration-seconds'"
 )
 
-closeParser = subparsers.add_parser("close")
+logoutParser = subparsers.add_parser("logout")
 
 args = parser.parse_args()
 subcommand = args.subcommand
@@ -83,7 +83,7 @@ if profile is None:
     parser.print_help()
     sys.exit(1)
 
-if subcommand == "open":
+if subcommand == "login":
     passThroughArgs = args.passThroughArgs
     tokenCode = args.tokenCode
 
@@ -132,9 +132,9 @@ if subcommand == "open":
 
     passThroughArgsJoined = " ".join(passThroughArgs)
     stsCommand = f"aws sts get-session-token --profile {permProfile} --serial-number {mfa_serial} --token-code {tokenCode} {passThroughArgsJoined}"
-    print(f"sts command: {stsCommand}")
+    #print(f"sts command: {stsCommand}")
     stsResult = os.popen(stsCommand).read()
-    print(f"results: {stsResult}")
+    #print(f"results: {stsResult}")
     try:
         stsResultJson = json.loads(stsResult)
     except json.decoder.JSONDecodeError:
@@ -147,7 +147,7 @@ if subcommand == "open":
 
     with open(credentialsFile, "w") as file:
         credentials.write(file)
-elif subcommand == "close":
+elif subcommand == "logout":
     credentials = ConfigParser()
     credentials.read(credentialsFile)
 
